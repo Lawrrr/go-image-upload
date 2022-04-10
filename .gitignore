@@ -12,4 +12,5 @@
 *.out
 
 .env
+*.db
 public/images

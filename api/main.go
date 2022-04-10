@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func uploadImage(w http.ResponseWriter, r *http.Request) {
@@ -49,12 +51,22 @@ func uploadImage(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 
-			dst, err := ioutil.TempFile("public/images", imgType)
+			dst, err := ioutil.TempFile("public\\images", imgType)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 			defer dst.Close()
+
+			// Store image info to database
+			var dbName = os.Getenv("DB_NAME")
+			db, err := sql.Open("sqlite3", "./"+dbName+".db")
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer db.Close()
+			db.Exec("INSERT INTO images(path, content_type, size) values(?,?,?);", dst.Name(), contentType, handler.Size)
 
 			// This is needed so that the image uploaded won't be corrupted
 			fileBytes, err := ioutil.ReadAll(file)
