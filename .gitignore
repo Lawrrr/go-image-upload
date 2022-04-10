@@ -13,4 +13,5 @@
 
 .env
 *.db
-public/images
+public/images/*
+!public/images/.gitkeep
